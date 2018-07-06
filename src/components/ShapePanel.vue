@@ -1,16 +1,16 @@
 <template>
   <div id="shape_panel" :style="{ height }">
     <div class="panel_container">
-      <div class="node start"></div>
+      <div class="node start" ref="start"></div>
     </div>
     <div class="panel_container">
-      <div class="node question"></div>
+      <div class="node question" ref="question"></div>
     </div>
     <div class="panel_container">
-      <div class="node action"></div>
+      <div class="node action" ref="action"></div>
     </div>
     <div class="panel_container">
-      <div class="node output"></div>
+      <div class="node output" ref="output"></div>
     </div>
   </div>
 </template>
