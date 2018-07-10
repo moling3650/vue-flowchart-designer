@@ -1,12 +1,16 @@
 <template>
   <div id="designer_viewport">
     <div id="designer_layout" :style="{ height }">
-      <div :class="['node', n.type]" :style="{top: n.top, left: n.left}" v-for="n in nodes" :key="n.id"></div>
+      <div :class="['node', 'output']" :style="{top: `${n.top}px`, left: `${n.left}px`}" v-for="n in nodes" :key="n.id">
+        {{n.id}}
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import bus from '@/bus'
+
 export default {
   name: 'DesignerViewport',
   props: {
@@ -24,6 +28,17 @@ export default {
     addNode (node) {
       this.nodes.push(node)
     }
+  },
+  mounted () {
+    bus.$on('fetchFlowDetail', detail => {
+      this.nodes = detail.map(d => {
+        return {
+          id: d.process_from,
+          top: d.top,
+          left: d.left
+        }
+      })
+    })
   }
 }
 </script>

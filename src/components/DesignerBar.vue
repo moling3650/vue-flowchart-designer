@@ -13,6 +13,8 @@
 
 <script>
 import apis from '@/apis/flowAPI'
+import bus from '@/bus'
+
 export default {
   name: 'DesignerBar',
   data () {
@@ -24,7 +26,7 @@ export default {
   methods: {
     handleFlowChange (flowCode) {
       apis.fetchDetailByFlowCode(flowCode).then(detail => {
-        console.log(detail)
+        bus.$emit('fetchFlowDetail', detail)
       })
     }
   },
