@@ -31,7 +31,7 @@ export default {
 <style lang="css" scoped>
 #designer_viewport {
   position: relative;
-  margin-left: 163px;
+  /*margin-left: 163px;*/
 }
 
 #designer_layout {
