@@ -67,15 +67,15 @@ export default {
         allowLoopback: false
       })
     },
-    connect (source, target, label) {
+    connect (source, target, type) {
       if (target.toUpperCase() !== 'END') {
         const c = this.jp.connect({
           source,
           target,
           detachable: false,
-          type: 'basic'
+          type
         })
-        c.getOverlay('label').setLabel(label)
+        c.getOverlay('label').setLabel(type)
       }
     },
     cleanJsPlumb () {
@@ -84,8 +84,30 @@ export default {
   },
   mounted () {
     this.jp.registerConnectionType('basic', { anchor: 'Continuous', connector: 'Flowchart' })
-    this.jp.bind('beforeDrop', info => {
-      console.log(info)
+    this.jp.registerConnectionType('OK', { anchor: 'Continuous', connector: 'Flowchart', paintStyle: {stroke: '#67c23a'} })
+    this.jp.registerConnectionType('NG', { anchor: 'Continuous', connector: 'Flowchart', paintStyle: {stroke: '#f56c6c'} })
+    // 新增一条连接
+    this.jp.bind('beforeDrop', ({connection: c}) => {
+      if (this.jp.getConnections({ source: c.sourceId, target: c.targetId }).length) {
+        this.$message.info('连接已存在')
+        return false
+      }
+      this.$confirm('请选择流程类型', '提示', {
+        distinguishCancelAndClose: true,
+        confirmButtonText: 'OK',
+        cancelButtonText: 'NG',
+        confirmButtonClass: 'el-button--success',
+        cancelButtonClass: 'el-button--danger',
+        type: 'warning'
+      }).then(_ => {
+        this.connect(c.sourceId, c.targetId, 'OK')
+      }).catch(action => {
+        if (action === 'cancel') {
+          this.connect(c.sourceId, c.targetId, 'NG')
+        }
+      })
+      return false
+    })
     })
     bus.$on('fetchFlowDetail', detail => {
       this.cleanJsPlumb()
