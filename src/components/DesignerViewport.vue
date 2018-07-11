@@ -108,7 +108,24 @@ export default {
       })
       return false
     })
+    // 编辑一个连接
+    this.jp.bind('dblclick', c => {
+      this.$confirm('', '编辑连接', {
+        confirmButtonText: '切换类型',
+        cancelButtonText: '删除连接',
+        cancelButtonClass: 'el-button--danger',
+        type: 'warning'
+      }).then(_ => {
+        const type = c.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
+        c.setType(type)
+        c.getOverlay('label').setLabel(type)
+      }).catch(action => {
+        if (action === 'cancel') {
+          this.jp.deleteConnection(c)
+        }
+      })
     })
+
     bus.$on('fetchFlowDetail', detail => {
       this.cleanJsPlumb()
       this.nodes = detail.map(d => {
