@@ -8,6 +8,7 @@
         :value="f.flow_code">
       </el-option>
     </el-select>
+    <el-button type="primary" @click="handleClick">保存</el-button>
   </div>
 </template>
 
@@ -28,6 +29,9 @@ export default {
       apis.fetchDetailByFlowCode(flowCode).then(detail => {
         bus.$emit('fetchFlowDetail', detail)
       })
+    },
+    handleClick () {
+      bus.$emit('saveFlowDetail')
     }
   },
   mounted () {

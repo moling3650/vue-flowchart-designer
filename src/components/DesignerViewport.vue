@@ -105,6 +105,21 @@ export default {
         })
       })
     })
+
+    bus.$on('saveFlowDetail', _ => {
+      const detail = []
+      this.nodes.map(node => {
+        const cs = this.jp.getConnections({ source: node.id })
+        if (cs.length) {
+          cs.map(c => {
+            detail.push({ source: c.sourceId, target: c.targetId, result: c.getOverlay('label').label })
+          })
+        } else {
+          detail.push({ source: node.id, target: 'END', result: 'OK' })
+        }
+      })
+      console.log(detail)
+    })
   }
 }
 </script>
