@@ -138,9 +138,11 @@ export default {
         cancelButtonClass: 'el-button--danger',
         type: 'warning'
       }).then(_ => {
-        const type = c.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
-        c.setType(type)
-        c.getOverlay('label').setLabel(type)
+        this.jp.getConnections({ source: `${c.sourceId}` }).map(conn => {
+          const type = conn.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
+          conn.setType(type)
+          conn.getOverlay('label').setLabel(type)
+        })
       }).catch(action => {
         if (action === 'cancel') {
           this.jp.deleteConnection(c)
