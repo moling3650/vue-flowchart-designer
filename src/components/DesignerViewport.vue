@@ -4,8 +4,9 @@
       <div class="node"
         :style="{top: `${n.top}px`, left: `${n.left}px`}"
         v-for="n in nodes"
-        :key="n.id" :id="n.id" ref="nodes"
-        <div class="node-text">{{n.id}}</div>
+        :key="n.pid" :id="n.id" ref="nodes"
+        @dblclick="editNode(n)">
+        <div class="node-text">{{n.text}}</div>
         <div class="ep"></div>
       </div>
     </div>
@@ -45,6 +46,9 @@ export default {
     }
   },
   methods: {
+    editNode (node) {
+      node.text = 'ok'
+    },
     addNode (node) {
       this.nodes.push(node)
     },
@@ -141,10 +145,13 @@ export default {
     bus.$on('fetchFlowDetail', detail => {
       this.cleanJsPlumb()
       this.nodes = detail.map(d => {
+        console.log(d)
         return {
           id: d.process_from,
           top: d.top,
-          left: d.left
+          left: d.left,
+          pid: d.pid,
+          text: d.process_from
         }
       })
       this.$nextTick(_ => {
