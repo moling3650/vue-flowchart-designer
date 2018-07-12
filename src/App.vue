@@ -31,22 +31,17 @@ div, input, textarea, ul {
   font-size: inherit;
 }
 .node {
-  padding: 16px;
   position: absolute;
-  z-index: 4;
+  width: 100px;
+  padding: 16px;
   border: 1px solid #2e6f9a;
+  z-index: 4;
   box-shadow: 2px 2px 19px #e0e0e0;
-  -o-box-shadow: 2px 2px 19px #e0e0e0;
-  -webkit-box-shadow: 2px 2px 19px #e0e0e0;
-  -moz-box-shadow: 2px 2px 19px #e0e0e0;
-  -moz-border-radius: 8px;
   border-radius: 8px;
+  font-size: 11px;
+  background-color: white;
   opacity: 0.8;
   cursor: move;
-  background-color: white;
-  font-size: 11px;
-  -webkit-transition: background-color 0.25s ease-in;
-  -moz-transition: background-color 0.25s ease-in;
   transition: background-color 0.25s ease-in;
 }
 
@@ -55,12 +50,11 @@ div, input, textarea, ul {
   color: white;
 }
 .node-text {
+  width: 100px;
   margin-right: 10px;
 }
 
 .alabel {
-  -webkit-transition: background-color 0.25s ease-in;
-  -moz-transition: background-color 0.25s ease-in;
   transition: background-color 0.25s ease-in;
 }
 
@@ -87,8 +81,6 @@ div, input, textarea, ul {
   background-color: orange;
   cursor: pointer;
   box-shadow: 0 0 2px black;
-  -webkit-transition: -webkit-box-shadow 0.25s ease-in;
-  -moz-transition: -moz-box-shadow 0.25s ease-in;
   transition: box-shadow 0.25s ease-in;
 }
 
