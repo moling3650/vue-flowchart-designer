@@ -4,9 +4,9 @@
       <div class="node"
         :style="{top: `${n.top}px`, left: `${n.left}px`}"
         v-for="n in nodes"
-        :key="n.pid" :id="n.id" ref="nodes"
+        :key="n.pid" :id="n.pid" ref="nodes"
         @dblclick="editNode(n)">
-        <div class="node-text">{{n.text}}</div>
+        <div class="node-text">{{n.process_from}}</div>
         <div class="ep"></div>
       </div>
     </div>
@@ -56,7 +56,7 @@ export default {
       this.jp.draggable(node, {
         containment: true,
         stop: ({ el, finalPos: [left, top] }) => {
-          const index = this.nodes.findIndex(node => node.id === el.id)
+          const index = this.nodes.findIndex(node => `${node.pid}` === el.id)
           if (~index) {
             this.nodes[index].top = top
             this.nodes[index].left = left
@@ -84,10 +84,10 @@ export default {
       })
     },
     connect (source, target, type) {
-      if (target.toUpperCase() !== 'END') {
+      if (source && target) {
         const c = this.jp.connect({
-          source,
-          target,
+          source: `${source}`,
+          target: `${target}`,
           detachable: false,
           type
         })
@@ -104,7 +104,7 @@ export default {
     this.jp.registerConnectionType('NG', { anchor: 'Continuous', connector: 'Flowchart', paintStyle: {stroke: '#f56c6c'} })
     // 新增一条连接
     this.jp.bind('beforeDrop', ({connection: c}) => {
-      if (this.jp.getConnections({ source: c.sourceId, target: c.targetId }).length) {
+      if (this.jp.getConnections({ source: `${c.sourceId}`, target: `${c.targetId}` }).length) {
         this.$message.info('连接已存在')
         return false
       }
@@ -144,22 +144,20 @@ export default {
 
     bus.$on('fetchFlowDetail', detail => {
       this.cleanJsPlumb()
-      this.nodes = detail.map(d => {
-        console.log(d)
-        return {
-          id: d.process_from,
-          top: d.top,
-          left: d.left,
-          pid: d.pid,
-          text: d.process_from
-        }
-      })
+      this.rawData = detail
+      const processSet = new Set(detail.map(d => d.process_from))
+      this.nodes = Array.from(processSet).map(p => detail.find(d => d.process_from === p))
+
       this.$nextTick(_ => {
         this.$refs.nodes.map(node => {
           this.initNode(node)
         })
         detail.map(node => {
-          this.connect(node.process_from, node.process_next, node.process_result)
+          if (node.process_next.toUpperCase() !== 'END') {
+            const source = this.nodes.find(n => n.process_from === node.process_from).pid
+            const target = this.nodes.find(n => n.process_from === node.process_next).pid
+            this.connect(source, target, node.process_result)
+          }
         })
       })
     })
@@ -167,13 +165,15 @@ export default {
     bus.$on('saveFlowDetail', _ => {
       const detail = []
       this.nodes.map(node => {
-        const cs = this.jp.getConnections({ source: node.id })
+        const cs = this.jp.getConnections({ source: `${node.pid}` })
         if (cs.length) {
           cs.map(c => {
-            detail.push({ source: c.sourceId, target: c.targetId, result: c.getOverlay('label').label })
+            const source = this.nodes.find(n => `${n.pid}` === c.sourceId).process_from
+            const target = this.nodes.find(n => `${n.pid}` === c.targetId).process_from
+            detail.push({ source, target, result: c.getOverlay('label').label, top: node.top, left: node.left })
           })
         } else {
-          detail.push({ source: node.id, target: 'END', result: 'OK' })
+          detail.push({ source: node.process_from, target: 'END', result: 'OK', top: node.top, left: node.left })
         }
       })
       console.log(detail)
