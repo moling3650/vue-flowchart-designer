@@ -1,7 +1,10 @@
 <template>
   <div id="designer_viewport">
     <div id="designer_layout" :style="{ height }">
-      <div class="node" :style="{top: `${n.top}px`, left: `${n.left}px`}" v-for="n in nodes" :key="n.id" :id="n.id" ref="nodes">
+      <div class="node"
+        :style="{top: `${n.top}px`, left: `${n.left}px`}"
+        v-for="n in nodes"
+        :key="n.id" :id="n.id" ref="nodes"
         <div class="node-text">{{n.id}}</div>
         <div class="ep"></div>
       </div>
@@ -46,7 +49,16 @@ export default {
       this.nodes.push(node)
     },
     initNode (node) {
-      this.jp.draggable(node, { containment: true })
+      this.jp.draggable(node, {
+        containment: true,
+        stop: ({ el, finalPos: [left, top] }) => {
+          const index = this.nodes.findIndex(node => node.id === el.id)
+          if (~index) {
+            this.nodes[index].top = top
+            this.nodes[index].left = left
+          }
+        }
+      })
       this.jp.makeSource(node, {
         filter: '.ep',
         anchor: 'Continuous',
