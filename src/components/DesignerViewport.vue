@@ -146,10 +146,16 @@ export default {
         cancelButtonClass: 'el-button--danger',
         type: 'warning'
       }).then(_ => {
-        this.jp.getConnections({ source: `${c.sourceId}` }).map(conn => {
-          const type = conn.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
-          conn.setType(type)
-          conn.getOverlay('label').setLabel(type)
+        const node = this.nodes.find(n => `${n.pid}` === c.sourceId)
+        apis.toggleProcessResult({
+          fCode: node.flow_code,
+          pCode: node.process_from
+        }).then(_ => {
+          this.jp.getConnections({ source: `${c.sourceId}` }).map(conn => {
+            const type = conn.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
+            conn.setType(type)
+            conn.getOverlay('label').setLabel(type)
+          })
         })
       }).catch(action => {
         if (action === 'cancel') {
