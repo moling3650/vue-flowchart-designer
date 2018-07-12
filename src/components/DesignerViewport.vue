@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import apis from '@/apis/flowAPI'
 import bus from '@/bus'
 import { jsPlumb } from 'jsPlumb'
 
@@ -56,10 +57,17 @@ export default {
       this.jp.draggable(node, {
         containment: true,
         stop: ({ el, finalPos: [left, top] }) => {
-          const index = this.nodes.findIndex(node => `${node.pid}` === el.id)
-          if (~index) {
-            this.nodes[index].top = top
-            this.nodes[index].left = left
+          const node = this.nodes.find(n => `${n.pid}` === el.id)
+          if (node) {
+            apis.updatePositions({
+              fCode: node.flow_code,
+              pCode: node.process_from,
+              top,
+              left
+            }).then(_ => {
+              node.top = top
+              node.left = left
+            })
           }
         }
       })

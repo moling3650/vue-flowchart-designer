@@ -6,5 +6,9 @@ export default {
   },
   fetchDetailByFlowCode (fCode) {
     return apis.executeSQL('SELECT * FROM B_Process_Flow_Detail WHERE flow_code = @fCode', { fCode })
+  },
+  updatePositions (payload) {
+    const sql = 'UPDATE B_Process_Flow_Detail SET [top] = @top, [left] = @left WHERE flow_code = @fCode AND process_from = @pCode'
+    return apis.executeSQL(sql, payload)
   }
 }
