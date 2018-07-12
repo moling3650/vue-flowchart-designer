@@ -72,8 +72,8 @@ export default {
           action: 'the-action'
         },
         maxConnections: 2,
-        onMaxConnections: function (info, e) {
-          alert(`Maximum connections (${info.maxConnections}) reached`)
+        onMaxConnections: (info, e) => {
+          this.$message.error('最多只能有两种流程（OK或NG）')
         }
       })
 
@@ -108,20 +108,26 @@ export default {
         this.$message.info('连接已存在')
         return false
       }
-      this.$confirm('请选择流程类型', '提示', {
-        distinguishCancelAndClose: true,
-        confirmButtonText: 'OK',
-        cancelButtonText: 'NG',
-        confirmButtonClass: 'el-button--success',
-        cancelButtonClass: 'el-button--danger',
-        type: 'warning'
-      }).then(_ => {
-        this.connect(c.sourceId, c.targetId, 'OK')
-      }).catch(action => {
-        if (action === 'cancel') {
-          this.connect(c.sourceId, c.targetId, 'NG')
-        }
-      })
+      const connections = this.jp.getConnections({ source: `${c.sourceId}` })
+      if (connections.length === 0) {
+        this.$confirm('请选择流程类型', '提示', {
+          distinguishCancelAndClose: true,
+          confirmButtonText: 'OK',
+          cancelButtonText: 'NG',
+          confirmButtonClass: 'el-button--success',
+          cancelButtonClass: 'el-button--danger',
+          type: 'warning'
+        }).then(_ => {
+          this.connect(c.sourceId, c.targetId, 'OK')
+        }).catch(action => {
+          if (action === 'cancel') {
+            this.connect(c.sourceId, c.targetId, 'NG')
+          }
+        })
+      } else if (connections.length === 1) {
+        const type = connections[0].getOverlay('label').label === 'OK' ? 'NG' : 'OK'
+        this.connect(c.sourceId, c.targetId, type)
+      }
       return false
     })
     // 编辑一个连接
