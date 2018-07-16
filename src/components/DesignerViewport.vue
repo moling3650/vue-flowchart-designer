@@ -25,6 +25,10 @@ import { jsPlumb } from 'jsPlumb'
 export default {
   name: 'DesignerViewport',
   props: {
+    flowCode: {
+      type: String,
+      required: true
+    },
     height: {
       type: String,
       default: '500px'
@@ -34,9 +38,9 @@ export default {
     return {
       nodes: [],
       jp: jsPlumb.getInstance({
-        Endpoint: ['Dot', {radius: 2}],
+        Endpoint: ['Dot', {radius: 1}],
         Connector: 'Flowchart',
-        HoverPaintStyle: {stroke: '#1e8151', strokeWidth: 2},
+        HoverPaintStyle: {stroke: '#1e8151', strokeWidth: 1},
         ConnectionOverlays: [
           ['Arrow', {
             location: 1,
@@ -55,6 +59,12 @@ export default {
       node.text = 'ok'
     },
     addNode (node) {
+      if (!this.flowCode) {
+        return this.$message.error({ message: '请先选择工艺流程', showClose: true })
+      }
+      if (this.nodes.find(n => n.process_from === node.process_from)) {
+        return this.$message.error({ message: '该工序已存在', showClose: true })
+      }
       this.nodes.push(node)
       this.$nextTick(_ => {
         this.initNode(document.querySelector(`#${node.process_from}`))

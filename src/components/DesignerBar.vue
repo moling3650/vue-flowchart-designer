@@ -1,6 +1,6 @@
 <template>
   <div id="DesignerBar">
-    <el-select v-model="flowCode" filterable placeholder="请选择流程" @change="handleFlowChange">
+    <el-select :value="flowCode" filterable placeholder="请选择流程" @change="handleFlowChange">
       <el-option
         v-for="f in flowList"
         :key="f.flow_code"
@@ -18,15 +18,21 @@ import bus from '@/bus'
 
 export default {
   name: 'DesignerBar',
+  props: {
+    flowCode: {
+      type: String,
+      required: true
+    }
+  },
   data () {
     return {
-      flowCode: '',
       flowList: []
     }
   },
   methods: {
     handleFlowChange (flowCode) {
       apis.fetchDetailByFlowCode(flowCode).then(detail => {
+        this.$emit('update:flowCode', flowCode)
         bus.$emit('fetchFlowDetail', detail)
       })
     },

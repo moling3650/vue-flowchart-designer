@@ -1,13 +1,13 @@
 <template>
   <div id="designer">
-    <DesignerBar/>
+    <DesignerBar :flowCode.sync="flowCode"/>
     <ShapePanel :height="height" :group="group" ref="ShapePanel"/>
-    <DesignerViewport :height="height" ref="DesignerViewport"/>
+    <DesignerViewport :flowCode="flowCode" :height="height" ref="DesignerViewport"/>
   </div>
 </template>
 
 <script>
-import { jsPlumb, jsPlumbUtil } from 'jsPlumb'
+import { jsPlumb } from 'jsPlumb'
 import apis from '@/apis/flowAPI'
 import DesignerBar from '@/components/DesignerBar'
 import ShapePanel from '@/components/ShapePanel'
@@ -25,7 +25,8 @@ export default {
       height: '600px',
       group: [],
       canDrop: false,
-      jp: jsPlumb.getInstance()
+      jp: jsPlumb.getInstance(),
+      flowCode: ''
     }
   },
   mounted () {
