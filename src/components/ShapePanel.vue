@@ -1,17 +1,10 @@
 <template>
   <div id="shape_panel" :style="{ height }">
-    <div class="panel_container">
-      <div class="node start" ref="start"></div>
-    </div>
-    <div class="panel_container">
-      <div class="node question" ref="question"></div>
-    </div>
-    <div class="panel_container">
-      <div class="node action" ref="action"></div>
-    </div>
-    <div class="panel_container">
-      <div class="node output" ref="output"></div>
-    </div>
+    <el-collapse v-model="activeName" accordion>
+      <el-collapse-item v-for="g in group" :key="g.group_code" :title="g.group_name" :name="g.group_code">
+        <div class="p-item" v-for="p in g.processList" :key="p.process_code" ref="processes">{{p.process_code}}</div>
+      </el-collapse-item>
+    </el-collapse>
   </div>
 </template>
 
@@ -22,10 +15,15 @@ export default {
     height: {
       type: String,
       default: '500px'
+    },
+    group: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
     return {
+      activeName: ''
     }
   }
 }
@@ -45,5 +43,23 @@ export default {
   padding: 10px 0;
   border-bottom: 1px solid #cbcccc;
   margin-top: 1px;
+}
+
+.p-item {
+  border: 1px solid #2e6f9a;
+  margin: 2px 10px;
+  z-index: 4;
+  border-radius: 8px;
+  font-size: 12px;
+  text-align: center;
+  background-color: white;
+  box-shadow: 2px 2px 19px #e0e0e0;
+  opacity: 0.8;
+  cursor: move;
+  transition: background-color 0.25s ease-in;
+}
+.p-item:hover {
+  background-color: #5c96bc;
+  color: white;
 }
 </style>
