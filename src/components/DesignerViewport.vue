@@ -4,10 +4,14 @@
       <div class="node"
         :style="{top: `${n.top}px`, left: `${n.left}px`}"
         v-for="n in nodes"
-        :key="n.pid" :id="n.pid" ref="nodes"
+        :key="n.pid" :id="n.process_from" ref="nodes"
         @dblclick="editNode(n)">
         <div class="node-text">{{n.process_from}}</div>
         <div class="ep"></div>
+      </div>
+
+      <div class="node" style="bottom: 50px; right: 20px;" id="END">
+        <div class="node-text">结束</div>
       </div>
     </div>
   </div>
@@ -57,7 +61,7 @@ export default {
       this.jp.draggable(node, {
         containment: true,
         stop: ({ el, finalPos: [left, top] }) => {
-          const node = this.nodes.find(n => `${n.pid}` === el.id)
+          const node = this.nodes.find(n => n.process_from === el.id)
           if (node) {
             apis.updatePositions({
               fCode: node.flow_code,
@@ -92,15 +96,13 @@ export default {
       })
     },
     connect (source, target, type) {
-      if (source && target) {
-        const c = this.jp.connect({
-          source: `${source}`,
-          target: `${target}`,
-          detachable: false,
-          type
-        })
-        c.getOverlay('label').setLabel(type)
-      }
+      const c = this.jp.connect({
+        detachable: false,
+        source,
+        target,
+        type
+      })
+      c.getOverlay('label').setLabel(type)
     },
     cleanJsPlumb () {
       this.jp.deleteEveryEndpoint()
@@ -110,13 +112,18 @@ export default {
     this.jp.registerConnectionType('basic', { anchor: 'Continuous', connector: 'Flowchart' })
     this.jp.registerConnectionType('OK', { anchor: 'Continuous', connector: 'Flowchart', paintStyle: {stroke: '#67c23a'} })
     this.jp.registerConnectionType('NG', { anchor: 'Continuous', connector: 'Flowchart', paintStyle: {stroke: '#f56c6c'} })
+    this.jp.makeTarget('END', {
+      dropOptions: { hoverClass: 'dragHover' },
+      anchor: 'Continuous',
+      allowLoopback: false
+    })
     // 新增一条连接
     this.jp.bind('beforeDrop', ({connection: c}) => {
-      if (this.jp.getConnections({ source: `${c.sourceId}`, target: `${c.targetId}` }).length) {
+      if (this.jp.getConnections({ source: c.sourceId, target: c.targetId }).length) {
         this.$message.info('连接已存在')
         return false
       }
-      const connections = this.jp.getConnections({ source: `${c.sourceId}` })
+      const connections = this.jp.getConnections({ source: c.sourceId })
       if (connections.length === 0) {
         this.$confirm('请选择流程类型', '提示', {
           distinguishCancelAndClose: true,
@@ -140,18 +147,18 @@ export default {
     })
     // 编辑一个连接
     this.jp.bind('dblclick', c => {
+      const node = this.nodes.find(n => n.process_from === c.sourceId)
       this.$confirm('', '编辑连接', {
         confirmButtonText: '切换类型',
         cancelButtonText: '删除连接',
         cancelButtonClass: 'el-button--danger',
         type: 'warning'
       }).then(_ => {
-        const node = this.nodes.find(n => `${n.pid}` === c.sourceId)
         apis.toggleProcessResult({
           fCode: node.flow_code,
           pCode: node.process_from
         }).then(_ => {
-          this.jp.getConnections({ source: `${c.sourceId}` }).map(conn => {
+          this.jp.getConnections({ source: c.sourceId }).map(conn => {
             const type = conn.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
             conn.setType(type)
             conn.getOverlay('label').setLabel(type)
@@ -175,30 +182,14 @@ export default {
           this.initNode(node)
         })
         detail.map(node => {
-          if (node.process_next.toUpperCase() !== 'END') {
-            const source = this.nodes.find(n => n.process_from === node.process_from).pid
-            const target = this.nodes.find(n => n.process_from === node.process_next).pid
-            this.connect(source, target, node.process_result)
-          }
+          this.connect(node.process_from, node.process_next, node.process_result)
         })
       })
     })
 
     bus.$on('saveFlowDetail', _ => {
-      const detail = []
-      this.nodes.map(node => {
-        const cs = this.jp.getConnections({ source: `${node.pid}` })
-        if (cs.length) {
-          cs.map(c => {
-            const source = this.nodes.find(n => `${n.pid}` === c.sourceId).process_from
-            const target = this.nodes.find(n => `${n.pid}` === c.targetId).process_from
-            detail.push({ source, target, result: c.getOverlay('label').label, top: node.top, left: node.left })
-          })
-        } else {
-          detail.push({ source: node.process_from, target: 'END', result: 'OK', top: node.top, left: node.left })
-        }
-      })
-      console.log(detail)
+      const cs = this.jp.getAllConnections()
+      console.log(cs)
     })
   }
 }
