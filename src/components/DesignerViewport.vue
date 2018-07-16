@@ -4,7 +4,7 @@
       <div class="node"
         :style="{top: `${n.top}px`, left: `${n.left}px`}"
         v-for="n in nodes"
-        :key="n.pid" :id="n.process_from" ref="nodes"
+        :key="n.process_from" :id="n.process_from" ref="nodes"
         @dblclick="editNode(n)">
         <div class="node-text">{{n.process_from}}</div>
         <div class="ep"></div>
@@ -56,6 +56,9 @@ export default {
     },
     addNode (node) {
       this.nodes.push(node)
+      this.$nextTick(_ => {
+        this.initNode(document.querySelector(`#${node.process_from}`))
+      })
     },
     initNode (node) {
       this.jp.draggable(node, {
@@ -175,7 +178,14 @@ export default {
       this.cleanJsPlumb()
       this.rawData = detail
       const processSet = new Set(detail.map(d => d.process_from))
-      this.nodes = Array.from(processSet).map(p => detail.find(d => d.process_from === p))
+      this.nodes = Array.from(processSet).map(p => {
+        const d = detail.find(d => d.process_from === p)
+        return {
+          top: d.top,
+          left: d.left,
+          process_from: d.process_from
+        }
+      })
 
       this.$nextTick(_ => {
         this.$refs.nodes.map(node => {

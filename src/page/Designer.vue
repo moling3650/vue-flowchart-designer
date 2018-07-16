@@ -7,6 +7,7 @@
 </template>
 
 <script>
+import { jsPlumb, jsPlumbUtil } from 'jsPlumb'
 import apis from '@/apis/flowAPI'
 import DesignerBar from '@/components/DesignerBar'
 import ShapePanel from '@/components/ShapePanel'
@@ -22,13 +23,39 @@ export default {
   data () {
     return {
       height: '600px',
-      group: []
+      group: [],
+      canDrop: false,
+      jp: jsPlumb.getInstance()
     }
   },
   mounted () {
     this.height = `${document.body.clientHeight}px`
     apis.fetchProcessGroup().then(group => {
       this.group = group
+      this.$nextTick(_ => {
+        this.jp.draggable(document.querySelectorAll('.p-item'), {
+          clone: true,
+          start: () => {
+            this.canDrop = false
+          },
+          stop: ({el, finalPos: [posX, posY]}) => {
+            if (this.canDrop) {
+              const {x, y} = this.$refs.DesignerViewport.$el.getBoundingClientRect()
+              this.$refs.DesignerViewport.addNode({
+                process_from: el.innerHTML,
+                top: posY - y,
+                left: posX - x
+              })
+            }
+          }
+        })
+        this.jp.droppable(this.$refs.DesignerViewport.$el, {
+          drop: info => {
+            this.canDrop = true
+            return true
+          }
+        })
+      })
     })
   }
 }
