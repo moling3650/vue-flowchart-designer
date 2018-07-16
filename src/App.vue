@@ -87,4 +87,7 @@ div, input, textarea, ul {
 .ep:hover {
   box-shadow: 0 0 6px black;
 }
+.el-collapse-item__header {
+  padding-left: 15px;
+}
 </style>

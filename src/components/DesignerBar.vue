@@ -51,7 +51,7 @@ export default {
 <style lang="css" scoped>
 #DesignerBar {
   position: relative;
-  padding-left: 35px;
+  padding-left: 15px;
   background-color: #f3f3f3;
   border-top: 1px solid #cbcccc;
   height: 40px;
