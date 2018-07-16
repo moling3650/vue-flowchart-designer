@@ -216,7 +216,18 @@ export default {
 
     bus.$on('saveFlowDetail', _ => {
       const cs = this.jp.getAllConnections()
-      console.log(cs.map(c => c.getData()))
+      const detail = cs.map(c => {
+        const data = c.getData()
+        data.process_from = c.sourceId
+        data.process_next = c.targetId
+        const { x: elementX, y: elementY } = document.getElementById(c.sourceId).getBoundingClientRect()
+        const { x: containerX, y: containerY } = document.getElementById('designer_layout').getBoundingClientRect()
+        data.top = elementY - containerY
+        data.left = elementX - containerX
+        data.process_result = c.getOverlay('label').label
+        return data
+      })
+      console.log(detail)
     })
   }
 }
