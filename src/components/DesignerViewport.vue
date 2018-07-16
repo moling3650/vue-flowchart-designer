@@ -36,6 +36,7 @@ export default {
   },
   data () {
     return {
+      detail: [],
       nodes: [],
       jp: jsPlumb.getInstance({
         Endpoint: ['Dot', {radius: 1}],
@@ -115,7 +116,17 @@ export default {
         target,
         type
       })
+      c.setData(this.getConnectionData(source, type))
       c.getOverlay('label').setLabel(type)
+    },
+    getConnectionData (sourceId, type) {
+      const data = this.detail.find(d => d.process_from === sourceId && d.process_result === type) || {}
+      return {
+        pid: data.pid || null,
+        idx: data.idx || 100,
+        process_min_time: data.process_min_time || 100,
+        standard_time: data.standard_time || 1
+      }
     },
     cleanJsPlumb () {
       this.jp.deleteEveryEndpoint()
@@ -174,6 +185,7 @@ export default {
           this.jp.getConnections({ source: c.sourceId }).map(conn => {
             const type = conn.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
             conn.setType(type)
+            conn.setData(this.getConnectionData(c.sourceId, type))
             conn.getOverlay('label').setLabel(type)
           })
         })
@@ -186,7 +198,7 @@ export default {
 
     bus.$on('fetchFlowDetail', detail => {
       this.cleanJsPlumb()
-      this.rawData = detail
+      this.detail = detail
       const processSet = new Set(detail.map(d => d.process_from))
       this.nodes = Array.from(processSet).map(p => {
         const d = detail.find(d => d.process_from === p)
@@ -209,7 +221,7 @@ export default {
 
     bus.$on('saveFlowDetail', _ => {
       const cs = this.jp.getAllConnections()
-      console.log(cs)
+      console.log(cs.map(c => c.getData()))
     })
   }
 }
