@@ -171,23 +171,18 @@ export default {
     })
     // 编辑一个连接
     this.jp.bind('dblclick', c => {
-      const node = this.nodes.find(n => n.process_from === c.sourceId)
       this.$confirm('', '编辑连接', {
+        distinguishCancelAndClose: true,
         confirmButtonText: '切换类型',
         cancelButtonText: '删除连接',
         cancelButtonClass: 'el-button--danger',
         type: 'warning'
       }).then(_ => {
-        apis.toggleProcessResult({
-          fCode: node.flow_code,
-          pCode: node.process_from
-        }).then(_ => {
-          this.jp.getConnections({ source: c.sourceId }).map(conn => {
-            const type = conn.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
-            conn.setType(type)
-            conn.setData(this.getConnectionData(c.sourceId, type))
-            conn.getOverlay('label').setLabel(type)
-          })
+        this.jp.getConnections({ source: c.sourceId }).map(conn => {
+          const type = conn.getOverlay('label').label === 'OK' ? 'NG' : 'OK'
+          conn.setType(type)
+          conn.setData(this.getConnectionData(c.sourceId, type))
+          conn.getOverlay('label').setLabel(type)
         })
       }).catch(action => {
         if (action === 'cancel') {
