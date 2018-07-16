@@ -18,7 +18,6 @@
 </template>
 
 <script>
-import apis from '@/apis/flowAPI'
 import bus from '@/bus'
 import { jsPlumb } from 'jsPlumb'
 
@@ -77,15 +76,8 @@ export default {
         stop: ({ el, finalPos: [left, top] }) => {
           const node = this.nodes.find(n => n.process_from === el.id)
           if (node) {
-            apis.updatePositions({
-              fCode: node.flow_code,
-              pCode: node.process_from,
-              top,
-              left
-            }).then(_ => {
-              node.top = top
-              node.left = left
-            })
+            node.top = top
+            node.left = left
           }
         }
       })
