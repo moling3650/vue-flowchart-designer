@@ -248,6 +248,7 @@ export default {
         data.process_next_group = this.processGroupMap.get(c.targetId) || data.process_from_group
         return data
       })
+      apis.deleteFlowDetails(this.detail.map(d => d.pid).filter(pid => !detail.find(d => d.pid === pid)))
       apis.updateFlowDetails(detail.filter(d => d.pid))
       apis.addFlowDetails(detail.filter(d => d.pid === null))
     })

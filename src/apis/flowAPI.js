@@ -61,5 +61,16 @@ export default {
       })
     })
     return apis.executeSQL(sql, payload)
+  },
+  deleteFlowDetails (pids) {
+    if (!pids.length) {
+      return
+    }
+    const payload = {}
+    const sql = `DELETE B_Process_Flow_Detail WHERE pid IN (${pids.map((pid, idx) => {
+      payload[`pid${idx}`] = pid
+      return `@pid${idx}`
+    }).join(', ')})`
+    return apis.executeSQL(sql, payload)
   }
 }
