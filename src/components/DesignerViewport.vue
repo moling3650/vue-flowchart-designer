@@ -130,13 +130,11 @@ export default {
     getConnectionData (sourceId, type) {
       const data = this.detail.find(d => d.process_from === sourceId && d.process_result === type) || {}
       return {
-        pid: data.pid || null,
-        idx: data.idx || 100,
-        process_min_time: data.process_min_time || 100,
-        standard_time: data.standard_time || 1
+        pid: data.pid || null
       }
     },
     cleanJsPlumb () {
+      this.jp.unmakeEverySource()
       this.jp.deleteEveryEndpoint()
     }
   },
@@ -202,23 +200,32 @@ export default {
     bus.$on('fetchFlowDetail', detail => {
       this.cleanJsPlumb()
       this.detail = detail
-      const processSet = new Set(detail.map(d => d.process_from))
-      this.nodes = Array.from(processSet).map(p => {
-        const d = detail.find(d => d.process_from === p)
-        return {
-          top: d.top,
-          left: d.left,
-          process_from: d.process_from
+      const nodeMap = {}
+      detail.forEach(d => {
+        if (d.process_next !== 'END') {
+          nodeMap[d.process_next] = {
+            process_from: d.process_next,
+            top: d.next_top,
+            left: d.next_left
+          }
+        }
+        nodeMap[d.process_from] = {
+          process_from: d.process_from,
+          top: d.from_top,
+          left: d.from_left
         }
       })
+      this.nodes = Object.values(nodeMap)
 
       this.$nextTick(_ => {
+        this.jp.setSuspendDrawing(true)
         this.$refs.nodes.map(node => {
           this.initNode(node)
         })
         detail.map(node => {
           this.connect(node.process_from, node.process_next, node.process_result)
         })
+        this.jp.setSuspendDrawing(false, true)
       })
     })
 
@@ -229,16 +236,20 @@ export default {
         data.flow_code = this.flowCode
         data.process_from = c.sourceId
         data.process_next = c.targetId
-        const { x: elementX, y: elementY } = document.getElementById(c.sourceId).getBoundingClientRect()
+        const { x: sourceX, y: sourceY } = document.getElementById(c.sourceId).getBoundingClientRect()
+        const { x: targetX, y: targetY } = document.getElementById(c.targetId).getBoundingClientRect()
         const { x: containerX, y: containerY } = document.getElementById('designer_layout').getBoundingClientRect()
-        data.top = elementY - containerY
-        data.left = elementX - containerX
+        data.from_top = sourceY - containerY
+        data.from_left = sourceX - containerX
+        data.next_top = targetY - containerY
+        data.next_left = targetX - containerX
         data.process_result = c.getOverlay('label').label
         data.process_from_group = this.processGroupMap.get(c.sourceId)
         data.process_next_group = this.processGroupMap.get(c.targetId) || data.process_from_group
         return data
       })
-      console.log(detail)
+      apis.updateFlowDetails(detail.filter(d => d.pid))
+      apis.addFlowDetails(detail.filter(d => d.pid === null))
     })
   }
 }
