@@ -29,5 +29,37 @@ export default {
       })
       return group
     })
+  },
+  addFlowDetails (details) {
+    if (!details.length) {
+      return
+    }
+    const fields = Object.keys(details[0]).filter(k => k !== 'pid')
+    const payload = {}
+    let sql = `INSERT INTO B_Process_Flow_Detail(${fields.map(f => `[${f}]`).join(', ')}) VALUES `
+    details.forEach((item, idx) => {
+      sql += `(${fields.map(f => `@${f}${idx}`).join(', ')}),`
+      Object.entries(item).forEach(([key, value]) => {
+        if (key !== 'pid') {
+          payload[`${key}${idx}`] = value
+        }
+      })
+    })
+    return apis.executeSQL(sql.slice(0, sql.length - 1), payload)
+  },
+  updateFlowDetails (details) {
+    if (!details.length) {
+      return
+    }
+    const fields = Object.keys(details[0]).filter(k => k !== 'pid')
+    const payload = {}
+    let sql = ''
+    details.forEach((item, idx) => {
+      sql += `UPDATE B_Process_Flow_Detail SET ${fields.map(f => `[${f}] = @${f}${idx}`).join(', ')} WHERE pid = @pid${idx};`
+      Object.entries(item).forEach(([key, value]) => {
+        payload[`${key}${idx}`] = value
+      })
+    })
+    return apis.executeSQL(sql, payload)
   }
 }
