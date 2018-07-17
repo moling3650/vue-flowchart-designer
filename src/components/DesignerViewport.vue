@@ -19,6 +19,7 @@
 
 <script>
 import bus from '@/bus'
+import apis from '@/apis/flowAPI'
 import { jsPlumb } from 'jsPlumb'
 
 export default {
@@ -28,9 +29,24 @@ export default {
       type: String,
       required: true
     },
+    group: {
+      type: Array,
+      default: () => []
+    },
     height: {
       type: String,
       default: '500px'
+    }
+  },
+  computed: {
+    processGroupMap () {
+      const processGroupMap = new Map()
+      this.group.forEach(g => {
+        g.processList.forEach(p => {
+          processGroupMap.set(p.process_code, g.group_code)
+        })
+      })
+      return processGroupMap
     }
   },
   data () {
@@ -210,6 +226,7 @@ export default {
       const cs = this.jp.getAllConnections()
       const detail = cs.map(c => {
         const data = c.getData()
+        data.flow_code = this.flowCode
         data.process_from = c.sourceId
         data.process_next = c.targetId
         const { x: elementX, y: elementY } = document.getElementById(c.sourceId).getBoundingClientRect()
@@ -217,6 +234,8 @@ export default {
         data.top = elementY - containerY
         data.left = elementX - containerX
         data.process_result = c.getOverlay('label').label
+        data.process_from_group = this.processGroupMap.get(c.sourceId)
+        data.process_next_group = this.processGroupMap.get(c.targetId) || data.process_from_group
         return data
       })
       console.log(detail)

@@ -2,7 +2,7 @@
   <div id="designer">
     <DesignerBar :flowCode.sync="flowCode"/>
     <ShapePanel :height="height" :group="group" ref="ShapePanel"/>
-    <DesignerViewport :flowCode="flowCode" :height="height" ref="DesignerViewport"/>
+    <DesignerViewport :flowCode="flowCode" :group="group" :height="height" ref="DesignerViewport"/>
   </div>
 </template>
 
